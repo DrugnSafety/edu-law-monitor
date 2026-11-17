@@ -216,6 +216,42 @@ export default function AdminPanel() {
         </form>
       </section>
 
+      {/* 기타 의견 일일 요약 */}
+      <section className={card} aria-labelledby="adm-op">
+        <h2 id="adm-op" className="font-serif text-xl font-bold">
+          기타 의견 일일 요약
+        </h2>
+        <p className="mt-1 text-[13px] leading-relaxed text-ink-2">
+          매일 저녁 확인(21:10) 때, 지난 요약 이후 새로 들어온 ‘기타 의견’이 있으면 전건 원문과 요약을 운영자 메일(OPINION_DIGEST_TO)로 보냅니다. 새 의견이 없으면 보내지 않습니다.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            disabled={!!busy}
+            className={btnPrimary}
+            onClick={() =>
+              act("op", async () => {
+                const r = await api("/api/admin/opinion-digest", { method: "POST", body: JSON.stringify({ onlyNew: true }) });
+                return r.status === "sent" ? `새 기타 의견 ${r.count}건 요약을 보냈습니다(${r.to}).` : r.status === "skipped" ? `보내지 않음: ${r.reason}` : `실패: ${r.error}`;
+              })
+            }
+          >
+            {busy === "op" ? "보내는 중…" : "새 의견 요약 지금 보내기"}
+          </button>
+          <button
+            disabled={!!busy}
+            className={btn}
+            onClick={() =>
+              act("op", async () => {
+                const r = await api("/api/admin/opinion-digest", { method: "POST", body: JSON.stringify({ onlyNew: false }) });
+                return r.status === "sent" ? `전체 기타 의견 ${r.count}건 요약을 보냈습니다(${r.to}).` : r.status === "skipped" ? `보내지 않음: ${r.reason}` : `실패: ${r.error}`;
+              })
+            }
+          >
+            전체 의견 다시 받기
+          </button>
+        </div>
+      </section>
+
       {/* 마일스톤 */}
       <section className={card} aria-labelledby="adm-pk">
         <h2 id="adm-pk" className="font-serif text-xl font-bold">

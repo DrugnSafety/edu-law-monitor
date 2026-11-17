@@ -6,6 +6,7 @@ import { dispatchPacket } from "@/lib/pickle";
 import { store } from "@/lib/storage";
 import type { ActionPacket } from "@/lib/types";
 import { runMonitor } from "@/lib/monitor";
+import { isDigestSlot, sendOpinionDigest } from "@/lib/opinion-digest";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 메일 순차 발송 여유(lib/monitor deadlineFrom)
@@ -23,7 +24,10 @@ export async function GET(req: Request) {
   for (const p of await store().list<ActionPacket>("packets").catch(() => [] as ActionPacket[])) {
     if (!p.dispatchedAt && (p.dispatches?.length ?? 0) < 3 && p.status !== "skipped") await dispatchPacket(p.id, run.stage).catch(() => null);
   }
+  // 운영자용 기타 의견 일일 요약(저녁 확인 때 하루 1회, 새 의견이 있을 때만)
+  const slot = new URL(req.url).searchParams.get("slot");
+  const opinionDigest = isDigestSlot(slot) ? await sendOpinionDigest().catch((e) => ({ status: "failed", error: (e as Error).message })) : { status: "skipped", reason: "저녁 확인 아님" };
   // 확인이 끝나면 정적 페이지 전체를 다시 만든다(on-demand revalidation)
   revalidatePath("/", "layout");
-  return NextResponse.json({ verdict: run.verdict, headline: run.headline, stage: run.stage, events: events.length, emailed, telegram, milestone: packet?.milestone ?? null });
+  return NextResponse.json({ verdict: run.verdict, headline: run.headline, stage: run.stage, events: events.length, emailed, telegram, milestone: packet?.milestone ?? null, opinionDigest });
 }

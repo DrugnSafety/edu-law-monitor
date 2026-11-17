@@ -135,3 +135,10 @@ API 갱신 시각 조사(2026-11-18 03:23 KST, 8개 서비스 실호출): 의안
 - `data/office-phones.json`의 `verified`(실제 통화로 확인)는 아직 모두 false입니다. 첫 통화 전 번호 확인 필요.
 - JSON 저장소는 단일 프로세스 개발용. 서버리스 배포에는 `DATABASE_URL` 필요.
 - 시행일(⑦)은 API로 알 수 없어 공포 후 부칙 확인 필요.
+
+
+## 운영자용 '기타 의견' 일일 요약 메일
+- 매일 저녁 확인(`/api/cron/monitor?slot=evening`, KST 21:10) 때 하루 1회 실행.
+- 지난 요약 이후 새로 들어온 '기타 의견'이 있을 때만 발송. 새 의견 전건 원문(숨김 처리 글 포함·표시) + 요약(ANTHROPIC_API_KEY가 있으면 AI 요약, 없으면 키워드 주제 분류).
+- 받는 주소: `OPINION_DIGEST_TO`(없으면 `ADMIN_EMAIL`). 같은 날 중복 발송 방지(meta `opinion_digest_state`).
+- 수동 발송: /admin '기타 의견 일일 요약' 또는 `POST /api/admin/opinion-digest {onlyNew:true|false}`.

@@ -179,3 +179,58 @@ ${test ? `<div style="margin-bottom:12px;padding:8px 10px;background:#FFF4D1;col
 
   return { subject, html: shell(`${VERDICTS[run.verdict].label}: ${headline}`, inner), text };
 }
+
+// ---------------- 운영자용 '기타 의견' 일일 요약 ----------------
+export type OpinionDigestInput = {
+  date: string;
+  posts: { id: string; createdAt: string; nickname: string; body: string; hidden: boolean }[];
+  summary: { text: string; themes: { label: string; count: number }[]; byLlm: boolean };
+  totalOther: number;
+  base: string;
+};
+
+export function opinionDigestMail({ date, posts, summary, totalOther, base }: OpinionDigestInput): MailContent {
+  const kst = (iso: string) => {
+    const k = new Date(new Date(iso).getTime() + 9 * 3600 * 1000).toISOString();
+    return `${k.slice(5, 10).replace("-", ".")} ${k.slice(11, 16)}`;
+  };
+  const subject = `[입법 모니터] 기타 의견 ${posts.length}건 요약 (${date})`;
+  const summaryHtml = h(summary.text).replace(/\n/g, "<br>");
+  const themeRows = summary.themes
+    .map((t) => `<tr><td style="padding:4px 0;font-family:${SANS};font-size:14px;color:${C.ink};">${h(t.label)}</td><td align="right" style="padding:4px 0;font-family:${SANS};font-size:14px;font-weight:bold;color:${C.ink};">${t.count}건</td></tr>`)
+    .join("");
+  const items = posts
+    .map(
+      (p, i) => `<tr><td style="padding:12px 0;border-top:1px solid ${C.rule};font-family:${SANS};">
+<div style="font-size:12px;color:${C.ink3};padding-bottom:4px;">${i + 1}. ${h(kst(p.createdAt))} · ${h(p.nickname || "익명")}${p.hidden ? ` · <span style="color:${C.red};font-weight:bold;">숨김 처리됨</span>` : ""}</div>
+<div style="font-family:${SERIF};font-size:15px;line-height:1.7;color:${C.ink};white-space:pre-wrap;">${h(p.body)}</div></td></tr>`,
+    )
+    .join("");
+  const html = shell(
+    `새 기타 의견 ${posts.length}건이 들어왔습니다.`,
+    `<tr><td style="padding:24px 24px 8px 24px;font-family:${SANS};color:${C.ink};">
+<p style="margin:0 0 4px 0;font-family:${SERIF};font-size:20px;font-weight:bold;">기타 의견 ${posts.length}건 (${h(date)})</p>
+<p style="margin:0 0 16px 0;font-size:13px;color:${C.ink3};">지난 요약 이후 새로 들어온 ‘기타 의견’ 전체입니다. 누적 기타 의견 ${totalOther}건 · 운영자 전용 메일</p>
+${sectionLabel(summary.byLlm ? "요약 (AI)" : "요약 (키워드 분류)")}
+<div style="background:${C.paper};border-radius:6px;padding:14px 16px;font-size:14px;line-height:1.7;color:${C.ink};">${summaryHtml}</div>
+${themeRows ? `<div style="padding-top:16px;">${sectionLabel("주제별 건수")}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${themeRows}</table></div>` : ""}
+</td></tr>
+<tr><td style="padding:8px 24px 8px 24px;">${sectionLabel("원문 전체 (오래된 순)")}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${items}</table></td></tr>
+<tr><td style="padding:12px 24px 24px 24px;">${button(`${base}/admin`, "관리자 화면에서 보기·숨기기")}</td></tr>`,
+  );
+  const text = [
+    `기타 의견 ${posts.length}건 (${date}) · 누적 ${totalOther}건`,
+    "",
+    "[요약]",
+    summary.text,
+    "",
+    "[주제별]",
+    ...summary.themes.map((t) => `- ${t.label}: ${t.count}건`),
+    "",
+    "[원문 전체]",
+    ...posts.map((p, i) => `${i + 1}. ${kst(p.createdAt)} · ${p.nickname || "익명"}${p.hidden ? " · 숨김" : ""}\n${p.body}`),
+    "",
+    `관리자 화면: ${base}/admin`,
+  ].join("\n");
+  return { subject, html, text };
+}
