@@ -1,0 +1,22 @@
+import "./load-env";
+import { runMonitor } from "../lib/monitor";
+import { VERDICTS } from "../lib/config";
+
+const { run, events, emailed } = await runMonitor("cli");
+console.log(`\n=== 판정: ${VERDICTS[run.verdict].label} (${run.kstDate}, ${run.durationMs}ms) ===`);
+console.log(run.headline);
+console.log(`\n단계: ${run.stages.map((s) => `${s.n}.${s.label}[${s.status}${s.date ? " " + s.date : ""}]`).join(" → ")}`);
+console.log("\n기준선 원안:");
+for (const b of run.baselineBills) console.log(`  ${b.billNo} ${b.found ? b.name : "(미조회)"} ${b.proposer} | 소관위 처리: ${b.committeeResult ?? "null"} ${b.committeeProcDate ?? ""} | ${b.passGubun ?? ""}`);
+console.log(`\n위원장 대안: ${run.alternatives.length ? run.alternatives.map((a) => `${a.billNo} ${a.name}`).join(", ") : "아직 없음(미등록)"}`);
+console.log("\n회의(최근 3일~향후 7일):");
+for (const m of run.meetings) console.log(`  ${m.date} ${m.time ?? ""} ${m.body} ${m.title} | 안건 ${m.agendaAvailable ? (m.relevant ? "대상 포함: " + m.matchedItems.join(" / ") : "대상 없음") : "미공지"}`);
+console.log("\n소스:");
+for (const s of run.sources) console.log(`  [${s.ok ? "OK" : "!!"}] ${s.name}: ${s.detail}`);
+if (run.reasons.length) console.log("\n근거:\n  " + run.reasons.join("\n  "));
+if (run.uncertainties.length) console.log("\n불확실:\n  " + run.uncertainties.join("\n  "));
+if (run.notes.length) console.log("\n메모:\n  " + run.notes.join("\n  "));
+console.log(`\n전망(${run.outlook.generatedBy}): ${run.outlook.text}`);
+console.log(`\n이벤트 ${events.length}건: ${events.map((e) => e.title).join(" | ")}`);
+console.log(`이메일 발송: ${emailed}`);
+process.exit(0);

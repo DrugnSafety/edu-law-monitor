@@ -1,0 +1,14 @@
+{
+  "note": "교육위원 지역사무실 유선번호. 공개 출처(열린국회정보 공식 API, 의원 공식 홈페이지 등)에 게재된 번호만 기재. 개인 휴대전화 금지. 실제 통화 전 반드시 출처를 재확인하고 verified:true로 바꿀 것. sms는 의원실이 공식적으로 공개한 문자 수신 번호만.",
+  "entries": [
+    {
+      "name": "박범계",
+      "office": "지역사무실(대전) — 대전 서구을",
+      "phone": "042-485-4413",
+      "sourceUrl": "https://open.assembly.go.kr/portal/openapi/nktulghcadyhmiqxi (열린국회정보 위원회 위원 명단 ASSEM_TEL)",
+      "verified": false,
+      "sms": null
+    }
+  ],
+  "updatedAt": "2026-11-17T17:37:24.653Z"
+}

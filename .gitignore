@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+.env*
+!.env.example
+data/store.json
+data/outbox
+*.log
+.DS_Store
+next-env.d.ts
+*.tsbuildinfo
+.vercel
