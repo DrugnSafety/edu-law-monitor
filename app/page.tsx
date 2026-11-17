@@ -41,7 +41,7 @@ export default async function Home() {
             초등학교 <span className="marker">6학년</span>까지.
           </h1>
           <p className="mt-5 max-w-[34em] text-[17px] leading-[1.75] text-ink-2">
-            국회 교육위원회 법안소위가 <b className="font-semibold text-ink">11월 17일</b> 육아휴직 대상 자녀를 만 12세까지 넓히는 대안을 의결했습니다.
+            국회 교육위원회 법안소위가 <b className="font-semibold text-ink">11월 17일</b> 육아휴직 대상 자녀를 만 12세(초6)까지 넓히는 개정안들을 하나의 위원회 대안으로 묶어 의결했습니다(대안 조문은 공개 전).
             {remaining.length > 0 ? (
               <>
                 {" "}
