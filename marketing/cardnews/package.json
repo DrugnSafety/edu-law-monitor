@@ -1,0 +1,15 @@
+{
+  "name": "edu-law-monitor-cardnews",
+  "private": true,
+  "type": "module",
+  "description": "카드뉴스 6장 + 썸네일: HTML → PNG(1080x1350, 1080x1080)",
+  "scripts": {
+    "qr": "node make-qr.mjs",
+    "render": "node render.mjs",
+    "build": "node make-qr.mjs && node render.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.1",
+    "qrcode": "^1.5.4"
+  }
+}

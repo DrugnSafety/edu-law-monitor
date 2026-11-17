@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>06 참여하기 — 응원 메모 남기기</title>
+    <link rel="stylesheet" href="cardnews.css" />
+    <style>
+      .cta-sheet {
+        justify-content: center;
+        padding-bottom: 72px;
+        align-items: center;
+        text-align: center;
+      }
+      .cta {
+        width: 100%;
+        margin-top: 24px;
+        padding: 46px 0 50px;
+        border-radius: 14px;
+        background: var(--ink);
+        color: #fff;
+        font-family: var(--serif);
+        font-size: 100px;
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+      }
+      .cta span {
+        margin-left: 0.18em;
+        font-family: var(--sans);
+        font-weight: 600;
+      }
+      .qr {
+        margin-top: 56px;
+        padding: 22px;
+        border: 2.5px solid var(--grid-line);
+        border-radius: 12px;
+        background: var(--sheet);
+      }
+      .qr img {
+        display: block;
+        width: 410px; /* 41모듈 × 10px */
+        height: 410px;
+      }
+      .qr-hint {
+        margin-top: 22px;
+        font-size: 34px;
+        font-weight: 600;
+        color: var(--ink-2);
+      }
+      .url {
+        margin-top: 6px;
+        font-size: 50px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+      }
+      .foot--about {
+        justify-content: center;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+
+    <main class="card">
+      <header class="mast">
+        <svg class="mast__seal" viewBox="0 0 40 40" aria-hidden="true">
+          <g filter="url(#ink)">
+            <rect x="1.5" y="1.5" width="37" height="37" rx="5" fill="#c3352b" />
+            <rect x="5" y="5" width="30" height="30" rx="2.5" fill="none" stroke="#fff" stroke-opacity=".55" />
+            <text x="20" y="27.5" text-anchor="middle" font-size="19" font-weight="700" fill="#fff" font-family="Gowun Batang, serif">12</text>
+          </g>
+        </svg>
+        <span class="mast__name">교원 육아휴직 12세 입법 모니터</span>
+        <span class="mast__page">6/6</span>
+      </header>
+
+      <section class="sheet cta-sheet">
+        <p class="eyebrow">로그인 없이 1분</p>
+        <p class="cta">응원 메모 남기기<span>→</span></p>
+
+        <div class="qr"><img src="qr.svg" alt="edu-law-monitor.vercel.app 으로 가는 QR 코드" /></div>
+        <p class="qr-hint">휴대폰 카메라로 비추면 바로 열립니다</p>
+        <p class="url">edu-law-monitor.vercel.app</p>
+      </section>
+
+      <footer class="foot foot--about">
+        <span>개인이 운영하는 비영리 입법 모니터 · 국회 열린국회정보 API 기반</span>
+      </footer>
+    </main>
+  </body>
+</html>

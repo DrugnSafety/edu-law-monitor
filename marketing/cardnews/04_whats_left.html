@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>04 남은 절차 — 결재란 ①~⑦과 정기회 종료</title>
+    <link rel="stylesheet" href="cardnews.css" />
+    <style>
+      .left-h {
+        margin-top: 22px;
+        font-size: 84px;
+      }
+
+      /* 결재란 ①~⑦ (사이트 StageTracker와 같은 구조) */
+      .track {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        margin-top: 56px;
+        list-style: none;
+        overflow: hidden;
+        border: 2.5px solid var(--grid-line);
+        border-radius: 8px;
+        background: var(--sheet);
+      }
+      .track li + li {
+        border-left: 2px solid rgba(54, 112, 79, 0.3);
+      }
+      .track__h {
+        padding: 14px 2px 12px;
+        text-align: center;
+        border-bottom: 2px solid rgba(54, 112, 79, 0.3);
+      }
+      .track .is-done .track__h {
+        background: var(--grid-soft);
+      }
+      .track__n {
+        display: block;
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.2;
+        color: var(--grid);
+      }
+      .track__l {
+        display: block;
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--ink-3);
+      }
+      .track .is-done .track__l,
+      .track .is-next .track__l {
+        color: var(--ink);
+      }
+      .track__b {
+        height: 196px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .track__b .stamp {
+        width: 112px;
+        height: 112px;
+      }
+      .track__date {
+        font-size: 30px;
+        font-weight: 700;
+        color: var(--seal-ink);
+      }
+      .track__ring {
+        width: 104px;
+        height: 104px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px dashed rgba(95, 104, 124, 0.6);
+        border-radius: 50%;
+        font-size: 30px;
+        font-weight: 700;
+        color: var(--ink-2);
+      }
+
+      /* 마감 */
+      .deadline {
+        padding-top: 40px;
+        border-top: 2px solid var(--rule);
+      }
+      .deadline__k {
+        display: inline-block;
+        padding: 4px 18px;
+        border: 2px solid rgba(195, 53, 43, 0.45);
+        border-radius: 999px;
+        font-size: 30px;
+        font-weight: 700;
+        color: var(--seal-ink);
+        background: var(--sheet);
+      }
+      .deadline__v {
+        margin-top: 14px;
+        font-family: var(--serif);
+        font-size: 150px;
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        color: var(--seal);
+      }
+      .deadline__t {
+        margin-top: 18px;
+        font-size: 40px;
+        line-height: 1.5;
+        color: var(--ink-2);
+      }
+      .deadline__t b {
+        font-weight: 700;
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+
+    <main class="card">
+      <header class="mast">
+        <svg class="mast__seal" viewBox="0 0 40 40" aria-hidden="true">
+          <g filter="url(#ink)">
+            <rect x="1.5" y="1.5" width="37" height="37" rx="5" fill="#c3352b" />
+            <rect x="5" y="5" width="30" height="30" rx="2.5" fill="none" stroke="#fff" stroke-opacity=".55" />
+            <text x="20" y="27.5" text-anchor="middle" font-size="19" font-weight="700" fill="#fff" font-family="Gowun Batang, serif">12</text>
+          </g>
+        </svg>
+        <span class="mast__name">교원 육아휴직 12세 입법 모니터</span>
+        <span class="mast__page">4/6</span>
+      </header>
+
+      <section class="sheet">
+        <p class="eyebrow">입법 진행 단계 ①~⑦</p>
+        <h1 class="headline left-h">다음 관문은<br />교육위 전체회의입니다</h1>
+
+        <ol class="track" aria-label="입법 진행 단계 7단계 중 1단계 완료">
+          <li class="is-done">
+            <div class="track__h"><span class="track__n">①</span><span class="track__l">소위</span></div>
+            <div class="track__b">
+              <svg class="stamp" viewBox="0 0 100 100" aria-hidden="true">
+                <g filter="url(#ink)" fill="none" stroke="currentColor">
+                  <circle cx="50" cy="50" r="45" stroke-width="6" />
+                  <circle cx="50" cy="50" r="36" stroke-width="2" />
+                  <text x="50" y="61" text-anchor="middle" font-size="30" font-weight="700" fill="currentColor" stroke="none" font-family="Gowun Batang, serif">의결</text>
+                </g>
+              </svg>
+              <span class="track__date tnum">11.17</span>
+            </div>
+          </li>
+          <li class="is-next">
+            <div class="track__h"><span class="track__n">②</span><span class="track__l">교육위</span></div>
+            <div class="track__b"><span class="track__ring">다음</span></div>
+          </li>
+          <li>
+            <div class="track__h"><span class="track__n">③</span><span class="track__l">법사위</span></div>
+            <div class="track__b"></div>
+          </li>
+          <li>
+            <div class="track__h"><span class="track__n">④</span><span class="track__l">본회의</span></div>
+            <div class="track__b"></div>
+          </li>
+          <li>
+            <div class="track__h"><span class="track__n">⑤</span><span class="track__l">이송</span></div>
+            <div class="track__b"></div>
+          </li>
+          <li>
+            <div class="track__h"><span class="track__n">⑥</span><span class="track__l">공포</span></div>
+            <div class="track__b"></div>
+          </li>
+          <li>
+            <div class="track__h"><span class="track__n">⑦</span><span class="track__l">시행</span></div>
+            <div class="track__b"></div>
+          </li>
+        </ol>
+
+        <div class="deadline push">
+          <p class="deadline__k">정기회 종료</p>
+          <p class="deadline__v tnum">12월 9일</p>
+          <p class="deadline__t">이번 회기를 넘기면<br /><b>다시 늦어질 수 있습니다.</b></p>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <span class="foot__url">edu-law-monitor.vercel.app</span>
+      </footer>
+    </main>
+  </body>
+</html>

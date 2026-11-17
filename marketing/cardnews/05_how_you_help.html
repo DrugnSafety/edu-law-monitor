@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>05 참여 — 응원 메모 한 줄 = 원고지 한 칸</title>
+    <link rel="stylesheet" href="cardnews.css" />
+    <style>
+      .help-h {
+        margin-top: 22px;
+        font-size: 84px;
+      }
+
+      /* 100칸 원고지 게이지(사이트 MilestoneGauge와 같은 구조). 첫 칸만 예시로 채운다 */
+      .gauge {
+        display: grid;
+        grid-template-columns: repeat(20, 1fr);
+        margin-top: 50px;
+        border-left: 2px solid var(--grid-line);
+        border-top: 2px solid var(--grid-line);
+        background: var(--sheet);
+      }
+      .gauge span {
+        aspect-ratio: 1;
+        border-right: 2px solid var(--grid-line);
+        border-bottom: 2px solid var(--grid-line);
+      }
+      .gauge .on {
+        background: var(--ink);
+      }
+      .gauge__scale {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 14px;
+        font-size: 30px;
+        font-weight: 600;
+        color: var(--ink-2);
+      }
+      .gauge__scale b {
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .gauge__end {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .gauge__end svg {
+        width: 38px;
+        height: 38px;
+        color: var(--ink);
+      }
+
+      .help-body {
+        margin-top: 42px;
+      }
+
+      .perks {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        list-style: none;
+      }
+      .perks li {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 18px 26px;
+        border: 2px solid var(--rule);
+        border-radius: 8px;
+        background: var(--sheet);
+        font-size: 36px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .perks svg {
+        width: 42px;
+        height: 42px;
+        flex: none;
+        color: var(--grid);
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+
+    <main class="card">
+      <header class="mast">
+        <svg class="mast__seal" viewBox="0 0 40 40" aria-hidden="true">
+          <g filter="url(#ink)">
+            <rect x="1.5" y="1.5" width="37" height="37" rx="5" fill="#c3352b" />
+            <rect x="5" y="5" width="30" height="30" rx="2.5" fill="none" stroke="#fff" stroke-opacity=".55" />
+            <text x="20" y="27.5" text-anchor="middle" font-size="19" font-weight="700" fill="#fff" font-family="Gowun Batang, serif">12</text>
+          </g>
+        </svg>
+        <span class="mast__name">교원 육아휴직 12세 입법 모니터</span>
+        <span class="mast__page">5/6</span>
+      </header>
+
+      <section class="sheet">
+        <p class="eyebrow">함께하는 방법</p>
+        <h1 class="headline help-h">응원 메모 한 줄 =<br />원고지 한 칸</h1>
+
+        <div class="gauge" role="img" aria-label="원고지 100칸. 메모 하나가 한 칸을 채웁니다.">
+          <span class="on"></span>
+          <!-- 나머지 99칸은 아래 스크립트가 채운다 -->
+        </div>
+        <div class="gauge__scale">
+          <span>↑ 내 메모 한 칸</span>
+          <span class="gauge__end">
+            <span><b>100칸</b>이 차면 피클이 전화</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 3.5h3.2l1.6 4.2-2.1 1.4a11 11 0 0 0 5.2 5.2l1.4-2.1 4.2 1.6V17a2.5 2.5 0 0 1-2.7 2.5C9.4 18.9 5.1 14.6 4.5 8.2A2.5 2.5 0 0 1 5 3.5Z" />
+            </svg>
+          </span>
+        </div>
+
+        <p class="body help-body"><b>빠른 입법 지지</b> 메모가 <b>100개</b> 모일 때마다 AI 비서 <b style="white-space: nowrap">‘피클(Pickle)’</b>이 교육위원회 국회의원 지역사무실에 여러분의 목소리를 모아 전화합니다.</p>
+
+        <ul class="perks push">
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M3.5 6.5h17v11h-17z M3.5 6.5l8.5 6.5 8.5-6.5" /></svg>
+            단계가 바뀌면 이메일 알림
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+            로그인 없이 1분
+          </li>
+        </ul>
+      </section>
+
+      <footer class="foot">
+        <span class="foot__url">edu-law-monitor.vercel.app</span>
+      </footer>
+    </main>
+    <script>
+      const g = document.querySelector(".gauge");
+      for (let i = 1; i < 100; i++) g.appendChild(document.createElement("span"));
+    </script>
+  </body>
+</html>

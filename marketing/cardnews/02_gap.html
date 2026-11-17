@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>02 격차 — 일반 공무원은 넓어졌고, 교원은 그대로입니다</title>
+    <link rel="stylesheet" href="cardnews.css" />
+    <style>
+      .gap-h {
+        margin-top: 22px;
+        font-size: 80px;
+      }
+      .rows {
+        display: flex;
+        flex-direction: column;
+        gap: 46px;
+        margin-top: 56px;
+      }
+      .row__head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .row__who {
+        font-size: 38px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .row__tag {
+        padding: 2px 14px;
+        border: 2px solid var(--grid-line);
+        border-radius: 6px;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--grid);
+        background: var(--sheet);
+      }
+      .row__tag--now {
+        border-color: var(--ink);
+        background: var(--ink);
+        color: #fff;
+      }
+      .row__cap {
+        margin-top: 14px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .row__rule {
+        font-size: 36px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+
+    <main class="card">
+      <header class="mast">
+        <svg class="mast__seal" viewBox="0 0 40 40" aria-hidden="true">
+          <g filter="url(#ink)">
+            <rect x="1.5" y="1.5" width="37" height="37" rx="5" fill="#c3352b" />
+            <rect x="5" y="5" width="30" height="30" rx="2.5" fill="none" stroke="#fff" stroke-opacity=".55" />
+            <text x="20" y="27.5" text-anchor="middle" font-size="19" font-weight="700" fill="#fff" font-family="Gowun Batang, serif">12</text>
+          </g>
+        </svg>
+        <span class="mast__name">교원 육아휴직 12세 입법 모니터</span>
+        <span class="mast__page">2/6</span>
+      </header>
+
+      <section class="sheet">
+        <p class="eyebrow">육아휴직 대상 자녀 · 지금 기준</p>
+        <h1 class="headline gap-h">일반 공무원은 넓어졌고,<br />교원은 그대로입니다</h1>
+
+        <div class="rows">
+          <div>
+            <div class="row__head">
+              <span class="row__who">일반 국가·지방공무원</span>
+              <span class="row__tag">2026년 6월부터</span>
+            </div>
+            <div class="strip strip--sm" aria-label="일반 공무원: 만 12세 이하 · 초등 6학년 이하">
+              <div class="is-cur"><span class="g">1</span><span class="u">학년</span></div>
+              <div class="is-cur"><span class="g">2</span><span class="u">학년</span></div>
+              <div class="is-new"><span class="g">3</span><span class="u">학년</span></div>
+              <div class="is-new"><span class="g">4</span><span class="u">학년</span></div>
+              <div class="is-new"><span class="g">5</span><span class="u">학년</span></div>
+              <div class="is-new"><span class="g">6</span><span class="u">학년</span></div>
+            </div>
+            <p class="row__cap">
+              <span class="row__rule">만 12세 이하 · 초등 6학년 이하</span>
+              <span class="note">출처: 베이비뉴스 2026.6.2</span>
+            </p>
+          </div>
+
+          <div>
+            <div class="row__head">
+              <span class="row__who">교원 (국공립·사립)</span>
+              <span class="row__tag row__tag--now">현행</span>
+            </div>
+            <div class="strip strip--sm" aria-label="교원: 만 8세 이하 또는 초등 2학년 이하">
+              <div class="is-cur"><span class="g">1</span><span class="u">학년</span></div>
+              <div class="is-cur"><span class="g">2</span><span class="u">학년</span></div>
+              <div class="is-off"><span class="g">3</span><span class="u">학년</span></div>
+              <div class="is-off"><span class="g">4</span><span class="u">학년</span></div>
+              <div class="is-off"><span class="g">5</span><span class="u">학년</span></div>
+              <div class="is-off"><span class="g">6</span><span class="u">학년</span></div>
+            </div>
+            <p class="row__cap">
+              <span class="row__rule">만 8세 이하 또는 초등 2학년 이하</span>
+            </p>
+          </div>
+        </div>
+
+        <p class="body push">교원에게 적용되는 <b>교육공무원법·사립학교법</b> 개정이 아직 뒤따르지 못했습니다.</p>
+      </section>
+
+      <footer class="foot">
+        <span class="foot__url">edu-law-monitor.vercel.app</span>
+      </footer>
+    </main>
+  </body>
+</html>
