@@ -59,6 +59,16 @@ export const MANUAL_CHECK_LINKS = [
 
 export const MILESTONE_STEP = 100;
 
+// 하루 3회 확인(KST). vercel.json crons(UTC)와 함께 바꿀 것.
+// 08:40 밤사이 API 동기화 + 오늘 공지된 의사일정(회의는 보통 10:00·14:00)
+// 13:40 오전 회의 결과 + 오후 일정 / 21:10 하루 결과 + 다음 날 일정
+export const CHECK_TIMES_KST = ["08:40", "13:40", "21:10"] as const;
+
+export type DispatchMode = "approval" | "auto";
+export function pickleDispatchMode(): DispatchMode {
+  return env("PICKLE_DISPATCH_MODE") === "auto" ? "auto" : "approval";
+}
+
 export function env(name: string): string | undefined {
   const v = process.env[name];
   return v && v.trim() ? v.trim() : undefined;
@@ -73,7 +83,8 @@ export function featureFlags() {
     assembly: !!env("ASSEMBLY_API_KEY"),
     naver: !!(env("NAVER_CLIENT_ID") && env("NAVER_CLIENT_SECRET")),
     llm: !!env("ANTHROPIC_API_KEY"),
-    email: !!env("RESEND_API_KEY"),
+    email: !!(env("SMTP_USER") && env("SMTP_PASS")) || !!env("RESEND_API_KEY"),
+    telegram: !!(env("TELEGRAM_BOT_TOKEN") && env("TELEGRAM_CHAT_ID")),
     postgres: !!env("DATABASE_URL"),
     admin: !!env("ADMIN_TOKEN"),
     cron: !!env("CRON_SECRET"),

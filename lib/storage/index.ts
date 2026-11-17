@@ -9,6 +9,8 @@ export type Rec = { id: string; createdAt: string; [k: string]: unknown };
 export interface Store {
   kind: "postgres" | "json";
   insert<T extends Rec>(col: Collection, item: T): Promise<void>;
+  /** 같은 id가 없을 때만 넣는다. 넣었으면 true(동시 요청에서 한 번만 true). */
+  insertIfAbsent<T extends Rec>(col: Collection, item: T): Promise<boolean>;
   upsert<T extends Rec>(col: Collection, item: T): Promise<void>;
   update<T extends Rec>(col: Collection, id: string, patch: Partial<T>): Promise<T | null>;
   get<T extends Rec>(col: Collection, id: string): Promise<T | null>;
@@ -49,6 +51,14 @@ class JsonStore implements Store {
       (d[col] ||= []).push(item);
     });
   }
+  async insertIfAbsent<T extends Rec>(col: Collection, item: T) {
+    return this.mutate((d) => {
+      const arr = (d[col] ||= []);
+      if (arr.some((x) => x.id === item.id)) return false;
+      arr.push(item);
+      return true;
+    });
+  }
   async upsert<T extends Rec>(col: Collection, item: T) {
     await this.mutate((d) => {
       const arr = (d[col] ||= []);
@@ -80,6 +90,26 @@ class JsonStore implements Store {
 }
 
 // ---------------- Postgres ----------------
+// 서버리스(Vercel) 기준: 인스턴스당 연결 1~3개, 유휴 연결은 빨리 닫고, 풀러(pgBouncer/Neon pooler) 호환을 위해 prepare:false.
+export function pgOptions(url: string) {
+  let local = false; // 해석할 수 없는 URL은 원격으로 보고 SSL을 켠다
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^\[|\]$/g, "");
+    local = ["localhost", "127.0.0.1", "::1"].includes(host) || u.searchParams.get("sslmode") === "disable";
+  } catch {
+    local = false;
+  }
+  const max = Math.min(3, Math.max(1, Number(env("PG_MAX_CONNECTIONS")) || 2));
+  return {
+    max,
+    ssl: local ? false : ("require" as const),
+    idle_timeout: 20, // 초. 서버리스 인스턴스가 얼어 있는 동안 연결을 붙잡지 않음
+    max_lifetime: 60 * 10,
+    connect_timeout: 10,
+    prepare: false,
+  };
+}
 type Sql = import("postgres").Sql<Record<string, never>>;
 class PgStore implements Store {
   kind = "postgres" as const;
@@ -88,7 +118,7 @@ class PgStore implements Store {
 
   private async sql(): Promise<Sql> {
     if (!this.sqlP) {
-      this.sqlP = import("postgres").then((m) => m.default(env("DATABASE_URL")!, { max: 3, idle_timeout: 20, prepare: false }) as unknown as Sql);
+      this.sqlP = import("postgres").then((m) => m.default(env("DATABASE_URL")!, pgOptions(env("DATABASE_URL")!)) as unknown as Sql);
     }
     const sql = await this.sqlP;
     if (!this.ready) {
@@ -109,6 +139,11 @@ class PgStore implements Store {
   async insert<T extends Rec>(col: Collection, item: T) {
     const sql = await this.sql();
     await sql`INSERT INTO elm_records (collection, id, created_at, data) VALUES (${col}, ${item.id}, ${item.createdAt}, ${sql.json(item as never)}) ON CONFLICT DO NOTHING`;
+  }
+  async insertIfAbsent<T extends Rec>(col: Collection, item: T) {
+    const sql = await this.sql();
+    const rows = await sql`INSERT INTO elm_records (collection, id, created_at, data) VALUES (${col}, ${item.id}, ${item.createdAt}, ${sql.json(item as never)}) ON CONFLICT DO NOTHING RETURNING id`;
+    return rows.length > 0;
   }
   async upsert<T extends Rec>(col: Collection, item: T) {
     const sql = await this.sql();

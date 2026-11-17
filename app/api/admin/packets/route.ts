@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { checkMilestone } from "@/lib/board";
 import { store } from "@/lib/storage";
 import type { ActionPacket } from "@/lib/types";
 import { isAdmin } from "@/lib/util";
@@ -8,7 +7,6 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   if (!isAdmin(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  await checkMilestone(); // 누락된 마일스톤이 있으면 생성(자동 실행 없음)
   return NextResponse.json({ packets: await store().list<ActionPacket>("packets") });
 }
 

@@ -1,6 +1,5 @@
 import { randomBytes } from "crypto";
-import { siteUrl } from "./config";
-import { sendEmail } from "./email";
+import { sendConfirmMail } from "./mail";
 import { store } from "./storage";
 import type { Subscriber } from "./types";
 import { sha256 } from "./util";
@@ -19,13 +18,7 @@ export async function subscribe(emailRaw: unknown): Promise<{ ok: boolean; statu
   const token = randomBytes(24).toString("base64url");
   const sub: Subscriber = { id, createdAt: new Date().toISOString(), email, status: "pending", token };
   await db.upsert("subscribers", sub);
-  const link = `${siteUrl()}/api/subscribe/confirm?token=${encodeURIComponent(token)}`;
-  await sendEmail(
-    email,
-    "[교원 육아휴직 입법 모니터] 구독 확인",
-    `<div style="font-family:sans-serif;line-height:1.6"><p>교원 육아휴직 12세 확대 입법 모니터 알림 구독을 요청하셨습니다.</p><p><a href="${link}">여기를 눌러 구독을 확인</a>해 주세요. 본인이 요청하지 않았다면 이 메일을 무시하면 됩니다.</p></div>`,
-    `구독 확인 링크: ${link}\n본인이 요청하지 않았다면 무시하세요.`,
-  );
+  await sendConfirmMail(email, token);
   return { ok: true, status: 200, message: "확인 메일을 보냈습니다. 메일의 링크를 눌러야 구독이 완료됩니다." };
 }
 

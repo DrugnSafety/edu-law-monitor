@@ -38,17 +38,26 @@ export async function assemblyQuery(
     u.searchParams.set("pSize", String(pSize));
     for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
     let text = "";
-    try {
-      const res = await fetch(u, {
-        headers: { "User-Agent": "Mozilla/5.0 (edu-law-monitor)", Accept: "application/json" },
-        ...(opts.revalidate ? { next: { revalidate: opts.revalidate } } : { cache: "no-store" }),
-        signal: AbortSignal.timeout(20000),
-      } as RequestInit);
-      text = await res.text();
-      if (!res.ok) throw new AssemblyApiError(`${service} HTTP ${res.status}`);
-    } catch (e) {
-      // 키가 노출되지 않도록 URL은 메시지에 포함하지 않음
-      throw new AssemblyApiError(`${service} 호출 실패: ${(e as Error).message}`);
+    // 일시적 시간 초과·네트워크 오류는 1회 재시도(단발성 지연으로 '확인 불확실' 알림이 가지 않도록)
+    for (let attempt = 1; ; attempt++) {
+      try {
+        const res = await fetch(u, {
+          headers: { "User-Agent": "Mozilla/5.0 (edu-law-monitor)", Accept: "application/json" },
+          ...(opts.revalidate ? { next: { revalidate: opts.revalidate } } : { cache: "no-store" }),
+          signal: AbortSignal.timeout(20000),
+        } as RequestInit);
+        text = await res.text();
+        if (!res.ok) throw new AssemblyApiError(`${service} HTTP ${res.status}`);
+        break;
+      } catch (e) {
+        const transient = !(e instanceof AssemblyApiError) || /HTTP 5\d\d/.test((e as Error).message);
+        if (transient && attempt < 2) {
+          await new Promise((r) => setTimeout(r, 1500));
+          continue;
+        }
+        // 키가 노출되지 않도록 URL은 메시지에 포함하지 않음
+        throw new AssemblyApiError(`${service} 호출 실패: ${(e as Error).message}`);
+      }
     }
     let json: Record<string, unknown>;
     try {

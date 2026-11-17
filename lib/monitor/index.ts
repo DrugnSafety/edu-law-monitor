@@ -4,17 +4,16 @@ import {
   kstDate,
   MANUAL_CHECK_LINKS,
   SESSION_END,
-  siteUrl,
   STAGES,
-  VERDICTS,
   type Verdict,
 } from "../config";
 import { llm } from "../llm";
 import { searchNaver } from "../naver";
 import { newId, store } from "../storage";
-import { sendEmail } from "../email";
-import { escapeHtml } from "../util";
-import type { AlternativeInfo, BillSnapshot, Meeting, MonitorEvent, MonitorRun, NewsItem, SourceStatus, StageInfo, Subscriber } from "../types";
+import { sendUpdateDigest } from "../mail";
+import type { Rec } from "../storage";
+import { formatVerdictNotice, sendTelegram, telegramConfigured } from "../telegram";
+import type { AlternativeInfo, BillSnapshot, Meeting, MonitorEvent, MonitorRun, NewsItem, SourceStatus, StageInfo } from "../types";
 import { fetchBaselineBills, findAlternatives } from "./bills";
 import { fetchMeetings } from "./meetings";
 
@@ -88,7 +87,7 @@ async function summarizeNews(items: Omit<NewsItem, "createdAt" | "summary">[]): 
   return map;
 }
 
-export type RunResult = { run: MonitorRun; events: MonitorEvent[]; emailed: number };
+export type RunResult = { run: MonitorRun; events: MonitorEvent[]; emailed: number; telegram: "sent" | "failed" | "dry-run" | "skipped" };
 
 export async function runMonitor(trigger: MonitorRun["trigger"]): Promise<RunResult> {
   const t0 = Date.now();
@@ -104,6 +103,12 @@ export async function runMonitor(trigger: MonitorRun["trigger"]): Promise<RunRes
   const ev = (e: Omit<MonitorEvent, "id" | "createdAt" | "runId">) => events.push({ id: newId("ev_"), createdAt, runId, ...e });
 
   const prev = (await db.list<MonitorRun>("runs", { limit: 1 }))[0] || null;
+  let resumed = 0;
+  try {
+    resumed = await resumePendingDigest(t0);
+  } catch (e) {
+    console.warn("[monitor] 지난 알림 메일 이어 보내기 실패", (e as Error).message);
+  }
 
   // 1) 의안
   const baselineBills = await fetchBaselineBills(sources);
@@ -186,7 +191,7 @@ export async function runMonitor(trigger: MonitorRun["trigger"]): Promise<RunRes
     const item: NewsItem = { ...n, createdAt, summary: summaries.get(n.id) || n.description };
     await db.upsert("news", item);
     const ts = n.pubDate ? new Date(n.pubDate.length === 10 ? n.pubDate + "T00:00:00+09:00" : n.pubDate).getTime() : NaN;
-    if (!isNaN(ts) && ts >= since48h && ts >= new Date(BASELINE_DATE + "T00:00:00+09:00").getTime()) {
+    if (n.strong && !isNaN(ts) && ts >= since48h && ts >= new Date(BASELINE_DATE + "T00:00:00+09:00").getTime()) {
       recentNew++;
       ev({ kind: "news", title: `[${n.kind === "news" ? "뉴스" : n.kind === "blog" ? "블로그" : "카페"}] ${n.title}`, detail: item.summary, sources: [{ label: n.source || "링크", url: n.link }], date: n.pubDate?.slice(0, 10) });
       // 기사-API 불일치 검사
@@ -221,7 +226,9 @@ export async function runMonitor(trigger: MonitorRun["trigger"]): Promise<RunRes
   if (!prev) {
     ev({ kind: "baseline", title: "모니터 시작 — 기준선 등록", detail: `2026-11-17 교육위 법안소위에서 교육공무원법 4건·사립학교법 3건 대안반영폐기 의결(①). 원안 API 조회 ${baselineBills.filter((b) => b.found).length}/${baselineBills.length}건.`, date: BASELINE_DATE });
   }
-  if (verdict === "uncertain" && (prev?.verdict !== "uncertain" || JSON.stringify(prev?.uncertainties) !== JSON.stringify(uniqUnc))) {
+  // 불확실 항목은 출처 단위 키로 비교(오류 문구가 'timeout'↔'HTTP 503'으로만 바뀐 경우는 같은 항목)
+  const uncKeys = uncertaintyKeys(uniqUnc);
+  if (verdict === "uncertain" && (prev?.verdict !== "uncertain" || uncKeys !== uncertaintyKeys(prev?.uncertainties || []))) {
     ev({ kind: "uncertain", title: `확인 불확실: ${uniqUnc[0]}`, detail: uniqUnc.join("\n"), sources: MANUAL_CHECK_LINKS.map((l) => ({ label: l.label, url: l.url })) });
   }
 
@@ -248,32 +255,67 @@ export async function runMonitor(trigger: MonitorRun["trigger"]): Promise<RunRes
   await db.insert("runs", run);
   for (const e of events) await db.insert("events", e);
 
-  // ---- 구독자 알림: 새 이벤트(기준선 제외)가 있거나 새 불확실 상황일 때만
-  const notifiable = events.filter((e) => e.kind !== "baseline" && e.kind !== "lag");
+  // ---- 알림: '변화 있음'·'확인 불확실'이면서 새 이벤트(기준선 제외)가 있을 때만.
+  // 불확실 이벤트만 있고 같은 항목을 24시간 안에 이미 알렸다면 다시 알리지 않는다.
+  let notifiable = events.filter((e) => e.kind !== "baseline" && e.kind !== "lag");
+  const state = (await db.get<NoticeState>("meta", "notice_state")) || { id: "notice_state", createdAt };
+  if (notifiable.length && notifiable.every((e) => e.kind === "uncertain") && state.uncertainKeys === uncKeys && state.uncertainAt && Date.now() - new Date(state.uncertainAt).getTime() < 24 * 3600 * 1000) {
+    console.log("[monitor] 같은 불확실 항목을 24시간 안에 이미 알림 — 이번에는 생략");
+    notifiable = [];
+  }
   let emailed = 0;
-  if (verdict !== "none" && notifiable.length) emailed = await notifySubscribers(run, notifiable);
-  return { run, events, emailed };
+  let telegram: RunResult["telegram"] = "skipped";
+  if (verdict !== "none" && notifiable.length) {
+    // 텔레그램을 먼저(빠름) — 메일이 시간 제한에 걸려도 운영자 알림은 나간다
+    if (telegramConfigured()) {
+      const r = await sendTelegram(formatVerdictNotice(run, notifiable));
+      telegram = r.dryRun ? "dry-run" : r.ok ? "sent" : "failed";
+      if (!r.ok) console.warn("[monitor] 텔레그램 알림 실패", r.error);
+    }
+    if (notifiable.some((e) => e.kind === "uncertain")) await db.upsert("meta", { ...state, uncertainKeys: uncKeys, uncertainAt: createdAt });
+    try {
+      const p = await sendUpdateDigest(run, notifiable, { deadline: deadlineFrom(t0) });
+      emailed = p.sent;
+      if (p.remaining > 0) {
+        await db.upsert("meta", { id: "digest_pending", createdAt, runId: run.id, eventIds: notifiable.map((e) => e.id), doneIds: p.doneIds, finished: false });
+        console.warn(`[monitor] 메일 ${p.remaining}명 남음 → 다음 실행에서 이어 보냄`);
+      }
+    } catch (e) {
+      console.warn("[monitor] 이메일 알림 실패", (e as Error).message);
+    }
+  }
+  return { run, events, emailed: emailed + resumed, telegram };
+}
+
+type NoticeState = Rec & { uncertainKeys?: string; uncertainAt?: string };
+type DigestPending = Rec & { runId: string; eventIds: string[]; doneIds: string[]; finished: boolean };
+
+/** 메일 발송 시간 예산: 실행 시작부터 MONITOR_MAIL_BUDGET_MS(기본 200초) — 크론 maxDuration 300초 안에서 여유를 둔다 */
+function deadlineFrom(t0: number): number {
+  return t0 + (Number(process.env.MONITOR_MAIL_BUDGET_MS) || 200_000);
+}
+
+function uncertaintyKeys(list: string[]): string {
+  return [...new Set(list.map((u) => u.split(/[:—]/)[0].replace(/\s+/g, " ").trim()))].sort().join("|");
+}
+
+/** 지난 실행에서 시간 제한으로 못 보낸 변경 알림 메일을 이어서 보낸다. */
+async function resumePendingDigest(t0: number): Promise<number> {
+  const db = store();
+  const pending = await db.get<DigestPending>("meta", "digest_pending");
+  if (!pending || pending.finished) return 0;
+  const run = await db.get<MonitorRun>("runs", pending.runId);
+  const events = (await db.list<MonitorEvent>("events", { limit: 300 })).filter((e) => pending.eventIds.includes(e.id));
+  if (!run || !events.length) {
+    await db.update<DigestPending>("meta", pending.id, { finished: true });
+    return 0;
+  }
+  const p = await sendUpdateDigest(run, events, { deadline: deadlineFrom(t0) - 60_000, doneIds: pending.doneIds });
+  await db.update<DigestPending>("meta", pending.id, { doneIds: p.doneIds, finished: p.remaining === 0 });
+  console.log(`[monitor] 지난 알림 메일 이어 보냄 ${p.sent}건, 남은 ${p.remaining}명`);
+  return p.sent;
 }
 
 function fmtBool(b: boolean | null | undefined) {
   return b === true ? "있음" : b === false ? "없음" : "확인 불가";
-}
-
-async function notifySubscribers(run: MonitorRun, events: MonitorEvent[]): Promise<number> {
-  const subs = (await store().list<Subscriber>("subscribers")).filter((s) => s.status === "confirmed");
-  if (!subs.length) return 0;
-  const base = siteUrl();
-  const subject = `[교원 육아휴직 입법 모니터] ${VERDICTS[run.verdict].label}: ${run.headline.replace(/^\[[^\]]+\]\s*/, "").slice(0, 60)}`;
-  const lines = [run.headline, "", ...events.map((e) => `• ${e.title}${e.detail ? `\n  ${e.detail.replace(/\n/g, "\n  ")}` : ""}`), "", run.outlook.text, "", `자세히 보기: ${base}/timeline`];
-  let n = 0;
-  for (const s of subs) {
-    const unsub = `${base}/api/subscribe/unsubscribe?token=${encodeURIComponent(s.token)}`;
-    const text = lines.join("\n") + `\n\n구독 해지: ${unsub}`;
-    const html = `<div style="font-family:sans-serif;line-height:1.6"><p><b>${escapeHtml(run.headline)}</b></p><ul>${events
-      .map((e) => `<li>${escapeHtml(e.title)}${e.detail ? `<br><span style="color:#555">${escapeHtml(e.detail).replace(/\n/g, "<br>")}</span>` : ""}</li>`)
-      .join("")}</ul><p style="color:#555">${escapeHtml(run.outlook.text)}</p><p><a href="${base}/timeline">타임라인 보기</a></p><p style="font-size:12px;color:#888"><a href="${unsub}">구독 해지</a></p></div>`;
-    const r = await sendEmail(s.email, subject, html, text);
-    if (r.ok) n++;
-  }
-  return n;
 }

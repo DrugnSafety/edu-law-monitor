@@ -61,9 +61,10 @@ export type NewsItem = {
   description: string;
   summary: string;
   query: string;
+  strong?: boolean; // 이 법안 맥락(12세·초6·대안·국회 심사)까지 언급 — 판정 근거로 사용
 };
 
-export type EventKind = "baseline" | "stage" | "alternative" | "meeting" | "news" | "uncertain" | "content" | "lag";
+export type EventKind = "baseline" | "stage" | "alternative" | "meeting" | "news" | "uncertain" | "content" | "lag" | "call";
 export type MonitorEvent = {
   id: string;
   createdAt: string;
@@ -115,7 +116,27 @@ export type Subscriber = {
   confirmedAt?: string;
 };
 
-export type PacketTarget = { name: string; office: string; phone: string; sourceUrl: string; verified: boolean; sms?: string | null };
+export type PacketTarget = {
+  name: string;
+  office: string;
+  phone: string;
+  sourceUrl: string;
+  verified: boolean;
+  sourceVerified?: boolean;
+  sms?: string | null;
+  alternates?: string[]; // 같은 의원의 다른 지역사무실 번호(부재 시 재시도용)
+};
+
+export type CallOutcome = "통화완료" | "부재" | "거절";
+export type CallResult = { id: string; name: string; office: string; outcome: CallOutcome; memo: string; recordedAt: string };
+
+export type PacketDispatch = {
+  status: "sent" | "failed";
+  mode: "approval" | "auto";
+  at: string;
+  messageIds: number[];
+  error?: string;
+};
 export type ActionPacket = {
   id: string;
   createdAt: string;
@@ -129,4 +150,9 @@ export type ActionPacket = {
   status: "queued" | "approved" | "done" | "skipped";
   note?: string;
   updatedAt?: string;
+  targetsFallback?: boolean; // 출처 확인 번호가 없어 전체 후보를 보낸 경우
+  dispatchedAt?: string | null; // 텔레그램 발송 성공 시각
+  telegramMessageId?: number | null; // 첫 메시지 id(결과 답장 기준)
+  dispatches?: PacketDispatch[]; // 발송 시도 이력(다시 보내기 포함)
+  callResults?: CallResult[];
 };

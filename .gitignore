@@ -10,3 +10,6 @@ data/outbox
 next-env.d.ts
 *.tsbuildinfo
 .vercel
+
+# local credentials (Notion-sourced DB secrets)
+.secrets/

@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { store } from "@/lib/storage";
 import type { Post } from "@/lib/types";
@@ -16,5 +17,9 @@ export async function POST(req: Request) {
   const { id, hidden } = (await req.json().catch(() => ({}))) as { id?: string; hidden?: boolean };
   if (!id) return NextResponse.json({ error: "id 필요" }, { status: 400 });
   const r = await store().update<Post>("posts", id, { hidden: !!hidden });
+  if (r) {
+    revalidatePath("/");
+    revalidatePath("/act");
+  }
   return r ? NextResponse.json({ ok: true }) : NextResponse.json({ error: "not found" }, { status: 404 });
 }
