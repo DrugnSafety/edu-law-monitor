@@ -2,23 +2,33 @@
 import { useState } from "react";
 
 export default function CopyBox({ title, text }: { title: string; text: string }) {
-  const [done, setDone] = useState(false);
+  const [state, setState] = useState<"idle" | "done" | "fail">("idle");
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setState("done");
+    } catch {
+      setState("fail");
+    }
+    setTimeout(() => setState("idle"), 2000);
+  }
   return (
-    <div className="rounded-lg border border-slate-200">
-      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-3 py-2">
-        <p className="text-sm font-semibold text-slate-800">{title}</p>
+    <div className="rounded-md border border-rule bg-sheet">
+      <div className="flex items-center justify-between gap-3 border-b border-rule px-4 py-2.5">
+        <h3 className="text-[15px] font-semibold text-ink">{title}</h3>
         <button
-          onClick={async () => {
-            await navigator.clipboard.writeText(text);
-            setDone(true);
-            setTimeout(() => setDone(false), 1500);
-          }}
-          className="rounded-md bg-white px-2 py-1 text-xs font-semibold text-civic-700 ring-1 ring-civic-100"
+          type="button"
+          onClick={copy}
+          className="rounded-md border border-ink/20 px-2.5 py-1 text-[13px] font-semibold text-ink transition-colors duration-150 hover:border-ink"
+          aria-label={`${title} 복사`}
         >
-          {done ? "복사됨" : "복사"}
+          {state === "done" ? "복사함" : "복사"}
         </button>
       </div>
-      <p className="whitespace-pre-wrap px-3 py-2 text-sm leading-relaxed text-slate-700">{text}</p>
+      <p className="ruled whitespace-pre-wrap px-4 py-1 font-serif text-[15px] text-ink">{text}</p>
+      <p aria-live="polite" className="sr-only">
+        {state === "done" ? `${title}을 복사했습니다.` : state === "fail" ? "복사하지 못했습니다. 글을 직접 선택해 복사하세요." : ""}
+      </p>
     </div>
   );
 }

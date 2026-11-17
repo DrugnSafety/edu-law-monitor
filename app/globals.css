@@ -1,14 +1,174 @@
 @import "tailwindcss";
 
+/*
+  디자인 토큰 — '학교와 국회의 종이'
+  paper   원고지 종이 바탕(차가운 세이지 그레이)   sheet  흰 종이
+  ink     먹·잉크(본문)                           grid   원고지 녹색 괘선(구조·라벨)
+  marker  형광펜(새로 포함되는 범위에만)            seal   인주(완료된 공식 절차·마감)
+*/
 @theme {
-  --font-sans: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
-  --color-civic-50: #f1f5fb;
-  --color-civic-100: #dfe8f5;
-  --color-civic-600: #1f4e8c;
-  --color-civic-700: #193f72;
-  --color-civic-800: #142f55;
-  --color-civic-900: #0e213d;
+  --color-paper: #f3f5ef;
+  --color-sheet: #ffffff;
+  --color-ink: #16213a;
+  --color-ink-2: #46516a;
+  --color-ink-3: #5f687c;
+  --color-rule: #c9d8cc;
+  --color-rule-2: #e2ebe4;
+  --color-grid: #36704f;
+  --color-grid-soft: #e6f1ea;
+  --color-marker: #ffe15a;
+  --color-seal: #c3352b;
+  --color-seal-ink: #a72b22;
+  --color-seal-soft: #fbeae7;
+  --color-amber-ink: #8a5a00;
+  --color-amber-soft: #fff4d1;
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
 }
 
-html { -webkit-text-size-adjust: 100%; }
-body { word-break: keep-all; overflow-wrap: anywhere; }
+@theme inline {
+  --font-serif: var(--font-gowun), "Gowun Batang", "Nanum Myeongjo", AppleMyungjo, Batang, serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  color-scheme: light;
+  scroll-padding-top: 1rem;
+}
+body {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  -webkit-tap-highlight-color: transparent;
+  font-feature-settings: "ss06";
+}
+@media (pointer: fine) {
+  html {
+    overscroll-behavior: none;
+  }
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+
+a,
+button,
+input,
+select,
+textarea,
+label {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 형광펜: 글자 아래 60%만 칠한다 */
+.marker {
+  background: linear-gradient(transparent 38%, var(--color-marker) 38%, var(--color-marker) 92%, transparent 92%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding: 0 0.08em;
+}
+
+/* 줄 노트(메모지): 줄 간격과 괘선 간격을 같게 */
+.ruled {
+  --line: 1.875rem;
+  line-height: var(--line);
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--line) - 1px), var(--color-rule-2) calc(var(--line) - 1px), var(--color-rule-2) var(--line));
+  background-position: 0 var(--ruled-offset, 0);
+  background-attachment: local;
+}
+
+/* 도장 찍기: 페이지 로드 때 한 번 */
+@keyframes stamp-in {
+  0% {
+    opacity: 0;
+    transform: scale(1.35) rotate(var(--tilt, -6deg));
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.96) rotate(var(--tilt, -6deg));
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(var(--tilt, -6deg));
+  }
+}
+.stamp {
+  transform: rotate(var(--tilt, -6deg));
+  transform-origin: center;
+  animation: stamp-in 420ms cubic-bezier(0.2, 0.8, 0.3, 1.2) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@keyframes cell-fill {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.cell-new {
+  animation: cell-fill 360ms ease-out both;
+}
+
+@keyframes memo-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.memo-new {
+  animation: memo-in 320ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp,
+  .cell-new,
+  .memo-new {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 50;
+  background: var(--color-ink);
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* 긴 카드 목록: 화면 밖 렌더링 생략 */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 140px;
+}
