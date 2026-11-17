@@ -1,4 +1,4 @@
-// 모니터링 기준선과 상수. 기준선은 docs-original-prompt-v3.md 및 PLAN.md 기준.
+// 모니터링 기준선과 상수. 기준선은 docs/original-monitoring-prompt-v3.md 및 PLAN.md 기준.
 
 export const BASELINE_DATE = "2026-11-17";
 export const SESSION_END = "2026-12-09"; // 정기회 종료일

@@ -56,7 +56,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               Open API를 <b className="font-semibold text-ink-2">하루 3회({CHECK_TIMES_KST.join(" · ")})</b> 조회해 자동으로 판정합니다. API 반영은 며칠 늦을 수 있어, 확인되지 않은 사항은 ‘확인 불확실’로 표시합니다. ‘추정’은 일반 절차에 근거한 예상이며 사실이 아닙니다.
             </p>
             <p>
-              빠른 입법 지지 메모가 100개 모일 때마다 AI 비서 ‘피클(Pickle)’이 교육위원회 의원 지역사무실에 전화를 겁니다. 운영자 승인 후 평일 업무시간에만, 사무실당 한 번입니다. 이 사이트는 개인이 운영하는 시민 모니터로 국회·정부와 관계가 없습니다.
+              빠른 입법 지지 메모가 100개 모일 때마다 AI 비서 ‘피클(Pickle)’이 교육위원회 의원 지역사무실에 전화를 겁니다. 운영자 승인 후 평일 업무시간에만, 사무실당 한 번입니다. 이 사이트는 개인이 운영하는 시민 모니터로 국회·정부와 관계가 없습니다. 판정 기준과 코드는{" "}
+              <a className="underline decoration-rule underline-offset-2 hover:decoration-ink" href="https://github.com/DrugnSafety/edu-law-monitor" target="_blank" rel="noreferrer">
+                GitHub
+              </a>
+              에 공개되어 있습니다.
             </p>
           </div>
         </footer>

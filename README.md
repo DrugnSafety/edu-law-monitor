@@ -1,8 +1,51 @@
 # 교원 육아휴직 12세 확대 입법 모니터 (edu-law-monitor)
 
-교육공무원법 개정 **위원회 대안**(교원 육아휴직 대상 자녀 만 8세/초2 → 만 12세/초6)과 사립학교법 대안의 국회 진행 상황을
-열린국회정보 공식 Open API로 하루 3회(KST 08:40·13:40·21:10) 추적하고, 시민 응원 게시판·이메일 알림·텔레그램 알림·의원실 참여 가이드를 제공하는 Next.js 앱입니다.
-상세 기획은 `PLAN.md`, 판정 원칙의 원본은 `docs-original-prompt-v3.md` 참고.
+> 교원(국공립·사립)의 육아휴직 대상 자녀를 **만 8세·초2 → 만 12세·초6**으로 넓히는
+> 교육공무원법·사립학교법 **위원회 대안**의 국회 진행 상황을 자동으로 추적하는 비영리 시민 모니터입니다.
+
+- 🌐 사이트: **https://edu-law-monitor.vercel.app**
+- 🗂 데이터: 국회사무처 [열린국회정보 Open API](https://open.assembly.go.kr) + 네이버 검색 API, 하루 3회(KST 08:40·13:40·21:10)
+- ✍️ 참여: 로그인 없이 응원 메모 · 단계 변화 이메일 알림 · '빠른 입법 지지' 메모 100개마다 AI 비서 '피클'이 교육위원회 의원 지역사무실에 전화
+- ⚖️ 원칙: 확인된 사실만 '변화 있음'으로, 확인 못 한 것은 '확인 불확실'로, 예상은 '추정'으로 표시합니다.
+
+개인이 운영하며 국회·정부·특정 단체와 관계가 없습니다.
+
+## 현재 상황 (2026-11-18 KST 기준)
+
+| 단계 | 상태 |
+|---|---|
+| ① 교육위 법안심사소위 | **2026-11-17 의결** — 교육공무원법 개정안 4건·사립학교법 개정안 3건을 위원회 대안으로 묶음(대안 조문 공개 전) |
+| ② 교육위 전체회의 | 대기 |
+| ③ 법사위 체계·자구 심사 | 대기 |
+| ④ 본회의 | 대기 (정기회 종료 12월 9일) |
+| ⑤ 정부 이송 → ⑥ 공포 → ⑦ 시행 | 대기 |
+
+최신 상태는 사이트의 판정 배지와 타임라인을 보세요.
+
+## 카드뉴스
+
+| | | |
+|---|---|---|
+| ![1](marketing/cardnews/png/01_cover.png) | ![2](marketing/cardnews/png/02_gap.png) | ![3](marketing/cardnews/png/03_progress.png) |
+| ![4](marketing/cardnews/png/04_whats_left.png) | ![5](marketing/cardnews/png/05_how_you_help.png) | ![6](marketing/cardnews/png/06_cta.png) |
+
+- 원본 HTML·렌더 스크립트: [`marketing/cardnews/`](marketing/cardnews/) (`npm install && node render.mjs`)
+- SNS·카페 게시 문구: [`marketing/cardnews/captions.md`](marketing/cardnews/captions.md)
+
+## 문서
+
+| 파일 | 내용 |
+|---|---|
+| [`docs/PLAN.md`](docs/PLAN.md) | 기획 의도와 고도화 계획 |
+| [`docs/original-monitoring-prompt-v3.md`](docs/original-monitoring-prompt-v3.md) | 이전에 Claude 예약 작업으로 매일 돌리던 모니터링 프롬프트(판정 규칙의 원본) |
+| [`docs/cafe-post-drafts.md`](docs/cafe-post-drafts.md) | 교사 카페·육아 카페 게시글 초안과 댓글 대응 메모 |
+| [`docs/promotion-targets.md`](docs/promotion-targets.md) | 홍보 대상(교원단체·언론·카페·SNS) 조사 목록 |
+| 이 README 아래 | 실행 방법, 환경 변수, 검증된 API 서비스 코드, 판정 규칙, 구조, 한계 |
+
+## 기술 개요
+
+Next.js(App Router) · TypeScript · Tailwind · Postgres(Neon) · Vercel Cron · Nodemailer(Gmail SMTP) · Telegram Bot API.
+디자인은 Anthropic `frontend-design` 스킬을 사용해 Claude Opus로 만들었습니다.
 
 ## 실행
 
