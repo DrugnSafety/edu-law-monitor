@@ -13,3 +13,4 @@ next-env.d.ts
 
 # local credentials (Notion-sourced DB secrets)
 .secrets/
+.omc/
